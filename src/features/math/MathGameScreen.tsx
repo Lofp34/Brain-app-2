@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useUser } from '../../context/UserContext';
@@ -35,6 +35,7 @@ const MathGameScreen: React.FC = () => {
   const [incorrect, setIncorrect] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [finished, setFinished] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => setTimer(duration * 60), [duration]);
 
@@ -70,6 +71,7 @@ const MathGameScreen: React.FC = () => {
     }
     setQuestion(buildQuestion(difficulty));
     setInput('');
+    inputRef.current?.focus();
   };
 
   const endSession = async () => {
@@ -106,6 +108,12 @@ const MathGameScreen: React.FC = () => {
     const secs = (timer % 60).toString().padStart(2, '0');
     return `${mins}:${secs}`;
   }, [timer]);
+
+  useEffect(() => {
+    if (active) {
+      inputRef.current?.focus();
+    }
+  }, [active, question]);
 
   return (
     <div className="space-y-5">
@@ -153,6 +161,10 @@ const MathGameScreen: React.FC = () => {
           <p className="text-lg font-semibold text-center">{question.prompt}</p>
           <Input
             type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            ref={inputRef}
+            autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && checkAnswer()}
